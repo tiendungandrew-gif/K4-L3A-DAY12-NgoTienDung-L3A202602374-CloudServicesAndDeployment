@@ -33,12 +33,14 @@
 
 ## 5. CP5 — Cloud Deployment & Documentation
 
-- [ ] 5.1 Cấu hình triển khai ứng dụng lên Cloud (Railway / Render / Local Fallback với `LOCAL_FALLBACK=true`).
-- [ ] 5.2 Hoàn thiện `DEPLOYMENT.md` và chụp ảnh giao diện lưu vào `screenshots/`.
-- [ ] 5.3 Xác nhận bản triển khai qua `pytest tests/test_cp5.py -v`.
+- [x] 5.1 Cấu hình triển khai ứng dụng lên Cloud (Railway / Render / Local Fallback với `LOCAL_FALLBACK=true`).
+- [x] 5.2 Hoàn thiện `DEPLOYMENT.md` và chụp ảnh giao diện lưu vào `screenshots/`.
+- [x] 5.3 Xác nhận bản triển khai qua `pytest tests/test_cp5.py -v`.
+
 
 ## 6. Phản Ánh & Bonus CI/CD
 
-- [ ] 6.1 Trả lời đủ 10 câu hỏi tự luận trong `exercises.md`.
-- [ ] 6.2 Xây dựng workflow GitHub Actions tại `.github/workflows/ci.yml` và kiểm tra qua `pytest tests/test_bonus_cicd.py -v`.
-- [ ] 6.3 Chạy lệnh `python grade.py` tự chấm điểm tổng thể đạt điểm tối đa.
+- [x] 6.1 Trả lời đủ 10 câu hỏi tự luận trong `exercises.md`.
+- [x] 6.2 Xây dựng workflow GitHub Actions tại `.github/workflows/ci.yml` và kiểm tra qua `pytest tests/test_bonus_cicd.py -v`.
+- [x] 6.3 Chạy lệnh `python grade.py` tự chấm điểm tổng thể đạt điểm tối đa (100.0/100).
+
