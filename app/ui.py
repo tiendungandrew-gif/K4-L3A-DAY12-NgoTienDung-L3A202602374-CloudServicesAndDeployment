@@ -546,7 +546,8 @@ def get_chat_ui_html() -> str:
     <!-- API Key Input Bar -->
     <div class="key-bar" id="keyBar">
       <span style="color:var(--text-muted);">X-API-Key:</span>
-      <input type="text" class="key-input" id="apiKeyInput" placeholder="Nhập AGENT_API_KEY..." />
+      <input type="password" class="key-input" id="apiKeyInput" placeholder="Dán AGENT_API_KEY vào đây để trò chuyện..." />
+      <button class="btn-icon" id="btnToggleShowKey" type="button" title="Hiện/Ẩn">👁️</button>
       <button class="btn-icon" id="btnSaveKey" style="background:#2563eb; color:#fff; border:none;">Lưu</button>
     </div>
 
@@ -556,7 +557,7 @@ def get_chat_ui_html() -> str:
         <div class="avatar bot">🦆</div>
         <div class="bubble">
           Xin chào! Tôi là <b>QuackBot AI Agent</b> được xây dựng theo chuẩn 12-Factor, lưu trữ Stateless trên Redis và chạy Live trên Cloud Render! 🚲☁️<br><br>
-          Bạn có thể hỏi tôi bất kỳ câu hỏi nào bên dưới hoặc gõ trực tiếp câu hỏi của bạn.
+          Bạn có thể bấm vào nút <b>🔑 API Key</b> ở góc trên để cấu hình khóa truy cập trước khi trò chuyện.
           <div class="meta-tags">
             <span class="meta-tag">⚡ Framework: FastAPI</span>
             <span class="meta-tag">🐳 Docker Multi-stage</span>
@@ -593,11 +594,11 @@ def get_chat_ui_html() -> str:
   </div>
 
   <script>
-    const DEFAULT_KEY = "VEOfnBNaQv-JPEf9pzb0YXT1d2vduSDnYBTTPrGf30Y";
     const apiKeyInput = document.getElementById("apiKeyInput");
     const keyBar = document.getElementById("keyBar");
     const btnToggleKey = document.getElementById("btnToggleKey");
     const btnSaveKey = document.getElementById("btnSaveKey");
+    const btnToggleShowKey = document.getElementById("btnToggleShowKey");
     const chatMessages = document.getElementById("chatMessages");
     const chatForm = document.getElementById("chatForm");
     const questionInput = document.getElementById("questionInput");
@@ -606,18 +607,28 @@ def get_chat_ui_html() -> str:
     const cyclingDuck = document.getElementById("cyclingDuck");
     const wheels = document.querySelectorAll(".wheel");
 
-    // Init API Key from localStorage or default
-    let storedKey = localStorage.getItem("AGENT_API_KEY") || DEFAULT_KEY;
+    // Init API Key from localStorage
+    let storedKey = localStorage.getItem("AGENT_API_KEY") || "";
     apiKeyInput.value = storedKey;
+
+    if (!storedKey) {
+      keyBar.style.display = "flex";
+      duckSpeech.innerText = "Quack! Dán API Key vào ô trên rồi bấm 'Lưu' nhé! 🔑";
+    }
+
+    btnToggleShowKey.addEventListener("click", () => {
+      apiKeyInput.type = apiKeyInput.type === "password" ? "text" : "password";
+    });
 
     btnToggleKey.addEventListener("click", () => {
       keyBar.style.display = keyBar.style.display === "none" ? "flex" : "none";
+      if (keyBar.style.display === "flex") apiKeyInput.focus();
     });
 
     btnSaveKey.addEventListener("click", () => {
       storedKey = apiKeyInput.value.trim();
       localStorage.setItem("AGENT_API_KEY", storedKey);
-      duckQuack("Đã lưu API Key mới vào trình duyệt! 🔑");
+      duckQuack("Đã lưu API Key an toàn trong trình duyệt! 🔑");
       keyBar.style.display = "none";
     });
 
@@ -690,8 +701,16 @@ def get_chat_ui_html() -> str:
     async function askQuestion(question) {
       if (!question || question.trim() === "") return;
       question = question.trim();
-      questionInput.value = "";
 
+      if (!storedKey) {
+        keyBar.style.display = "flex";
+        apiKeyInput.focus();
+        appendMessage("🔑 Bạn cần nhập API Key để bắt đầu trò chuyện. Hãy dán AGENT_API_KEY vào ô trên thanh công cụ rồi bấm 'Lưu' nhé!", "bot");
+        duckQuack("Quack! Cần có API Key mới gọi được Agent! 🔑");
+        return;
+      }
+
+      questionInput.value = "";
       appendMessage(question, "user");
       btnSend.disabled = true;
       duckQuack("Đang đạp xe tìm câu trả lời cho bạn... 🚲💨");
@@ -713,7 +732,7 @@ def get_chat_ui_html() -> str:
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-API-Key": storedKey || DEFAULT_KEY,
+            "X-API-Key": storedKey,
             "X-User-Id": "web-user"
           },
           body: JSON.stringify({ question })
@@ -755,3 +774,4 @@ def get_chat_ui_html() -> str:
 </body>
 </html>
 """
+
