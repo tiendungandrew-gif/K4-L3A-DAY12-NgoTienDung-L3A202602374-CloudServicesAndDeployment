@@ -1,0 +1,117 @@
+# Kế Hoạch Triển Khai Chi Tiết — Lab Hạ Tầng Cloud & Deployment
+
+> **OpenSpec Change ID:** `complete-cloud-agent-lab`  
+> **Thư mục tài liệu OpenSpec:** `openspec/changes/complete-cloud-agent-lab/`  
+> **Tổng điểm mục tiêu:** 100/100 (Bắt buộc) + 10 (Bonus CI/CD)
+
+---
+
+## 🟢 Checkpoint 1 — 12-Factor Config, Health & Logging (15/15 Điểm)
+*Trạng thái: **ĐÃ HOÀN THÀNH (13/13 test passed)***
+
+- [x] **Task 1.1:** [`app/config.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/config.py)
+  - Khai báo 6 trường: `port` (8000), `agent_api_key` (bắt buộc, không default để fail-fast), `redis_url`, `rate_limit_per_minute` (10), `monthly_budget_usd` (10.0), `log_level` ("INFO").
+- [x] **Task 1.2:** [`app/logging_utils.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/logging_utils.py)
+  - Cài đặt `log_event()` xuất ra một dòng JSON duy nhất chứa `event`, `level` viết thường, `timestamp` UTC ISO-8601.
+- [x] **Task 1.3:** [`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)
+  - Cài đặt `/health` liveness probe độc lập không phụ thuộc Redis.
+- [x] **Lệnh xác thực:**
+  ```powershell
+  .\.venv\Scripts\pytest tests/test_cp1.py -v
+  ```
+
+---
+
+## 🟢 Checkpoint 2 — Docker Containerization (15/15 Điểm)
+*Trạng thái: **ĐÃ HOÀN THÀNH (16/16 test passed)***
+
+- [x] **Task 2.1:** Cập nhật [`Dockerfile`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/Dockerfile)
+  - Tách thành 2 stage: `AS builder` cài thư viện với `--prefix=/install` và `AS runtime` chỉ copy kết quả.
+  - Tối ưu thứ tự layer cache: `COPY requirements.txt` trước khi `COPY app`.
+  - Tạo user thường `appuser` (UID 10001), chạy lệnh bằng `USER appuser`.
+  - Thêm chỉ thị `HEALTHCHECK` kiểm tra `/health`.
+  - Đọc biến `$PORT` linh hoạt: `uvicorn ... --host 0.0.0.0 --port ${PORT:-8000}`.
+- [x] **Task 2.2:** Cập nhật [`.dockerignore`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/.dockerignore)
+  - Loại trừ `.env`, `.venv`, `.git`, `__pycache__`, `.pytest_cache`, `screenshots`, `openspec`.
+- [x] **Task 2.3:** Cập nhật [`docker-compose.yml`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/docker-compose.yml)
+  - Thêm service `agent` build từ `Dockerfile`, mở cổng `8000:8000`, liên kết `depends_on: redis`.
+  - Truyền biến môi trường: `AGENT_API_KEY: ${AGENT_API_KEY}` và `REDIS_URL: redis://redis:6379/0`.
+- [x] **Lệnh xác thực:**
+  ```powershell
+  .\.venv\Scripts\pytest tests/test_cp2.py -v
+  ```
+
+
+---
+
+## 🟡 Checkpoint 3 — API Security (20 Điểm)
+*Mục tiêu: Bảo vệ endpoint `/ask` qua 3 tầng (Auth 401, Rate Limit 429, Cost Guard 402).*
+
+- [ ] **Task 3.1:** Cài đặt [`app/auth.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/auth.py)
+  - Kiểm tra header `X-API-Key` với `secrets.compare_digest(api_key, settings.agent_api_key)` chống timing attack.
+  - Trả về `user_id` từ `X-User-Id` (mặc định `ANONYMOUS_USER`), raise 401 nếu thiếu hoặc sai key.
+- [ ] **Task 3.2:** Cài đặt [`app/rate_limiter.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/rate_limiter.py)
+  - Dùng Redis Sorted Set: dọn request cũ bằng `zremrangebyscore(key, 0, now - 60)`, đếm `zcard(key)`.
+  - Nếu `count >= limit` → raise 429; nếu không → ghi nhận `zadd(key, {unique_member: now})` và `expire(key, 60)`.
+- [ ] **Task 3.3:** Cài đặt [`app/cost_guard.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/cost_guard.py)
+  - Lưu chi phí theo `cost:<user>:<YYYY-MM>`.
+  - `spent()`: đọc float tổng chi tiêu; `check()`: nếu vượt budget → raise 402; `record()`: `incrbyfloat`.
+- [ ] **Task 3.4:** Hoàn thiện `/ask` trong [`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)
+  - Chạy theo đúng thứ tự: `limiter.check` → `guard.check` → lấy history → gọi `ask_llm` → lưu history → `guard.record` → `log_event`.
+- [ ] **Lệnh xác thực:**
+  ```powershell
+  .\.venv\Scripts\pytest tests/test_cp3.py -v
+  ```
+
+---
+
+## 🟡 Checkpoint 4 — Scaling & Reliability (20 Điểm)
+*Mục tiêu: Đưa state ra khỏi RAM vào Redis, probe `/ready` và Graceful Shutdown.*
+
+- [ ] **Task 4.1:** Cài đặt [`app/store.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/store.py)
+  - Lưu tin nhắn vào Redis bằng `RPUSH history:<user_id>`.
+  - Giới hạn độ dài với `ltrim(key, -HISTORY_MAX_MESSAGES, -1)` và gia hạn `expire(key, HISTORY_TTL_SECONDS)`.
+  - Hàm `ping()` nuốt mọi ngoại lệ và trả `bool`.
+- [ ] **Task 4.2:** Cài đặt `/ready` probe trong [`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)
+  - Trả về 503 nếu `shutting_down` hoặc `store.ping() == False`; 200 `{"status": "ready", "redis": true}` khi sẵn sàng.
+- [ ] **Task 4.3:** Cài đặt [`app/lifecycle.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/lifecycle.py)
+  - Bắt tín hiệu `SIGTERM` và `SIGINT`, set `shutting_down = True`, và gọi tiếp handler cũ của uvicorn.
+- [ ] **Lệnh xác thực:**
+  ```powershell
+  .\.venv\Scripts\pytest tests/test_cp4.py -v
+  ```
+
+---
+
+## 🟡 Checkpoint 5 — Cloud Deployment (15 Điểm)
+*Mục tiêu: Có URL công khai hoặc cấu hình Local Fallback đầy đủ minh chứng.*
+
+- [ ] **Task 5.1:** Triển khai dịch vụ lên Cloud (Railway/Render) hoặc cấu hình `LOCAL_FALLBACK=true` trong `.env`.
+- [ ] **Task 5.2:** Điền thông tin vào [`DEPLOYMENT.md`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/DEPLOYMENT.md) (Public URL, platform, output kiểm thử curl).
+- [ ] **Task 5.3:** Lưu ảnh chụp màn hình dashboard vào thư mục `screenshots/`.
+- [ ] **Lệnh xác thực:**
+  ```powershell
+  .\.venv\Scripts\pytest tests/test_cp5.py -v
+  ```
+
+---
+
+## 🟡 Phiếu Phản Ánh & Bonus CI/CD (25 Điểm)
+
+- [ ] **Task 6.1:** Trả lời 10 câu hỏi trong [`exercises.md`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/exercises.md) (15 Điểm)
+  - Câu 1: Fail-fast trong Settings
+  - Câu 2: Structured logging
+  - Câu 3: Kích thước Docker Image
+  - Câu 4: Thứ tự lệnh Dockerfile & Cache
+  - Câu 5: Rủi ro chạy quyền root
+  - Câu 6: Lợi ích của Sliding Window
+  - Câu 7: Khác biệt Rate Limit vs Cost Guard
+  - Câu 8: Phân biệt `/health` vs `/ready`
+  - Câu 9: Tính chất Stateless Service
+  - Câu 10: Xử lý lỗi khi deploy
+- [ ] **Task 6.2:** Xây dựng GitHub Actions CI/CD Pipeline (Bonus +10 Điểm)
+  - Tạo file `.github/workflows/ci.yml` tự động chạy test và build docker image khi push/PR vào `main`.
+  - Xác thực qua: `.\.venv\Scripts\pytest tests/test_bonus_cicd.py -v`.
+- [ ] **Task 6.3:** Kiểm tra tổng điểm bằng `grade.py`
+  - Chạy lệnh: `$env:PYTHONIOENCODING="utf-8"; .\.venv\Scripts\python.exe grade.py`
+  - Đảm bảo đạt mục tiêu điểm tối đa trước khi nộp bài.
