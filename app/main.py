@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from utils.mock_llm import ask_llm
@@ -29,6 +29,7 @@ from .lifecycle import lifecycle
 from .logging_utils import log_event
 from .rate_limiter import RateLimiter
 from .store import ConversationStore, get_redis_client
+from .ui import get_chat_ui_html
 
 SERVICE_NAME = "day12-agent"
 SERVICE_VERSION = "1.0.0"
@@ -90,6 +91,13 @@ def ready(store: ConversationStore = Depends(get_store)):
     if not store.ping():
         return JSONResponse(status_code=503, content={"status": "not ready", "redis": False})
     return {"status": "ready", "redis": True}
+
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    """Giao diện Web Chatbot trực quan với chú vịt đạp xe SVG."""
+    return HTMLResponse(content=get_chat_ui_html())
+
 
 
 
