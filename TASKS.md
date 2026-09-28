@@ -59,21 +59,22 @@
 
 ---
 
-## 🟡 Checkpoint 4 — Scaling & Reliability (20 Điểm)
-*Mục tiêu: Đưa state ra khỏi RAM vào Redis, probe `/ready` và Graceful Shutdown.*
+## 🟢 Checkpoint 4 — Scaling & Reliability (20/20 Điểm)
+*Trạng thái: **ĐÃ HOÀN THÀNH (19/19 test passed)***
 
-- [ ] **Task 4.1:** Cài đặt [`app/store.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/store.py)
+- [x] **Task 4.1:** Cài đặt [`app/store.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/store.py)
   - Lưu tin nhắn vào Redis bằng `RPUSH history:<user_id>`.
   - Giới hạn độ dài với `ltrim(key, -HISTORY_MAX_MESSAGES, -1)` và gia hạn `expire(key, HISTORY_TTL_SECONDS)`.
   - Hàm `ping()` nuốt mọi ngoại lệ và trả `bool`.
-- [ ] **Task 4.2:** Cài đặt `/ready` probe trong [`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)
+- [x] **Task 4.2:** Cài đặt `/ready` probe trong [`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)
   - Trả về 503 nếu `shutting_down` hoặc `store.ping() == False`; 200 `{"status": "ready", "redis": true}` khi sẵn sàng.
-- [ ] **Task 4.3:** Cài đặt [`app/lifecycle.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/lifecycle.py)
+- [x] **Task 4.3:** Cài đặt [`app/lifecycle.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/lifecycle.py)
   - Bắt tín hiệu `SIGTERM` và `SIGINT`, set `shutting_down = True`, và gọi tiếp handler cũ của uvicorn.
-- [ ] **Lệnh xác thực:**
+- [x] **Lệnh xác thực:**
   ```powershell
   .\.venv\Scripts\pytest tests/test_cp4.py -v
   ```
+
 
 ---
 

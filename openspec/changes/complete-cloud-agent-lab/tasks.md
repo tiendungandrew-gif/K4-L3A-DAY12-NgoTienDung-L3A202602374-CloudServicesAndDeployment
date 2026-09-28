@@ -25,10 +25,11 @@
 
 ## 4. CP4 — Scaling & Reliability (Stateless Store, Readiness, Shutdown)
 
-- [ ] 4.1 Cài đặt `app/store.py` lưu lịch sử trò chuyện trong Redis (`history:<user_id>`) kèm `RPUSH`, `LTRIM` và `EXPIRE`.
-- [ ] 4.2 Cài đặt `/ready` endpoint kiểm tra cờ `shutting_down` và kết nối Redis qua `store.ping()`.
-- [ ] 4.3 Cài đặt `app/lifecycle.py` bắt các tín hiệu `SIGTERM`/`SIGINT` phục vụ Graceful Shutdown.
-- [ ] 4.4 Kiểm tra toàn bộ bằng `pytest tests/test_cp4.py -v`.
+- [x] 4.1 Cài đặt `app/store.py` lưu lịch sử trò chuyện trong Redis (`history:<user_id>`) kèm `RPUSH`, `LTRIM` và `EXPIRE`.
+- [x] 4.2 Cài đặt `/ready` endpoint kiểm tra cờ `shutting_down` và kết nối Redis qua `store.ping()`.
+- [x] 4.3 Cài đặt `app/lifecycle.py` bắt các tín hiệu `SIGTERM`/`SIGINT` phục vụ Graceful Shutdown.
+- [x] 4.4 Kiểm tra toàn bộ bằng `pytest tests/test_cp4.py -v`.
+
 
 ## 5. CP5 — Cloud Deployment & Documentation
 
