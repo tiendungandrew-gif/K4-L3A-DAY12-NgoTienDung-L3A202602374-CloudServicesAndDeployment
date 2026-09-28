@@ -17,10 +17,11 @@
 
 ## 3. CP3 — API Security (Auth, Rate Limit, Cost Guard)
 
-- [ ] 3.1 Cài đặt `app/auth.py` kiểm tra header `X-API-Key` với `secrets.compare_digest` chống timing attack.
-- [ ] 3.2 Cài đặt `app/rate_limiter.py` với cửa sổ trượt Redis Sorted Set (`zremrangebyscore`, `zcard`, `zadd`, `expire`).
-- [ ] 3.3 Cài đặt `app/cost_guard.py` quản lý tổng chi tiêu người dùng hàng tháng theo key `cost:<user>:<YYYY-MM>`.
-- [ ] 3.4 Bọc các kiểm tra an ninh trước khi gọi LLM trong `/ask` (`app/main.py`) và xác nhận qua `pytest tests/test_cp3.py -v`.
+- [x] 3.1 Cài đặt `app/auth.py` kiểm tra header `X-API-Key` với `secrets.compare_digest` chống timing attack.
+- [x] 3.2 Cài đặt `app/rate_limiter.py` với cửa sổ trượt Redis Sorted Set (`zremrangebyscore`, `zcard`, `zadd`, `expire`).
+- [x] 3.3 Cài đặt `app/cost_guard.py` quản lý tổng chi tiêu người dùng hàng tháng theo key `cost:<user>:<YYYY-MM>`.
+- [x] 3.4 Bọc các kiểm tra an ninh trước khi gọi LLM trong `/ask` (`app/main.py`) và xác nhận qua `pytest tests/test_cp3.py -v`.
+
 
 ## 4. CP4 — Scaling & Reliability (Stateless Store, Readiness, Shutdown)
 

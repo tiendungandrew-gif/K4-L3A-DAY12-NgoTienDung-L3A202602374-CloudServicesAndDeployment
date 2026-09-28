@@ -44,24 +44,18 @@
 
 ---
 
-## 🟡 Checkpoint 3 — API Security (20 Điểm)
-*Mục tiêu: Bảo vệ endpoint `/ask` qua 3 tầng (Auth 401, Rate Limit 429, Cost Guard 402).*
+## 🟢 Checkpoint 3 — API Security (20/20 Điểm)
+*Trạng thái: **ĐÃ HOÀN THÀNH (22/22 test passed)***
 
-- [ ] **Task 3.1:** Cài đặt [`app/auth.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/auth.py)
-  - Kiểm tra header `X-API-Key` với `secrets.compare_digest(api_key, settings.agent_api_key)` chống timing attack.
-  - Trả về `user_id` từ `X-User-Id` (mặc định `ANONYMOUS_USER`), raise 401 nếu thiếu hoặc sai key.
-- [ ] **Task 3.2:** Cài đặt [`app/rate_limiter.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/rate_limiter.py)
-  - Dùng Redis Sorted Set: dọn request cũ bằng `zremrangebyscore(key, 0, now - 60)`, đếm `zcard(key)`.
-  - Nếu `count >= limit` → raise 429; nếu không → ghi nhận `zadd(key, {unique_member: now})` và `expire(key, 60)`.
-- [ ] **Task 3.3:** Cài đặt [`app/cost_guard.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/cost_guard.py)
-  - Lưu chi phí theo `cost:<user>:<YYYY-MM>`.
-  - `spent()`: đọc float tổng chi tiêu; `check()`: nếu vượt budget → raise 402; `record()`: `incrbyfloat`.
-- [ ] **Task 3.4:** Hoàn thiện `/ask` trong [`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)
-  - Chạy theo đúng thứ tự: `limiter.check` → `guard.check` → lấy history → gọi `ask_llm` → lưu history → `guard.record` → `log_event`.
-- [ ] **Lệnh xác thực:**
+- [x] **Task 3.1:** Cài đặt xác thực `X-API-Key` với `secrets.compare_digest` chống Timing Attack trong [`app/auth.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/auth.py).
+- [x] **Task 3.2:** Cài đặt Sliding-window Rate Limiting dựa trên Redis Sorted Set trong [`app/rate_limiter.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/rate_limiter.py).
+- [x] **Task 3.3:** Cài đặt Monthly Budget Cost Guard kiểm tra chi phí theo `cost:<user>:<YYYY-MM>` trong [`app/cost_guard.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/cost_guard.py).
+- [x] **Task 3.4:** Tích hợp kiểm tra an ninh theo thứ tự trong `/ask` ([`app/main.py`](file:///e:/Tien%20Dung/VIN/K4-L3A-DAY12-NgoTienDung-L3A202602374-CloudServicesAndDeployment/app/main.py)).
+- [x] **Lệnh xác thực:**
   ```powershell
   .\.venv\Scripts\pytest tests/test_cp3.py -v
   ```
+
 
 ---
 
